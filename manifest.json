@@ -1,0 +1,18 @@
+{
+	"manifest_version":2,
+	"name":"Translate So Easy",
+	"description":"The translation has never been so simple",
+	"version":"1.0",
+	"author":"D4ker",
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"run_at": "document_end",
+			"css": ["style.css"],
+			"js": ["script.js"]
+		}
+	],
+	"icons":{
+		"96":"icons/96x96.png"
+	}
+}
