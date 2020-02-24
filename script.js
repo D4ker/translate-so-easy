@@ -1,6 +1,7 @@
 /*
 На данный момент не поддерживается:
-1. Множественное выделение.
+	1. Множественное выделение.
+	2. Выборочное выделение в блоке-подсказке. Будет работать в будущем при зажатой клавише Ctrl
 */
 
 let translatorsURL = {
@@ -16,7 +17,7 @@ function getBlockXY(rects) {
 	let rect = rects[0];
 	let minX = rect.left;
 	let maxY = rect.bottom;
-	for (var i = 1; i < rects.length; i++) {
+	for (let i = 1; i < rects.length; i++) {
 		rect = rects[i];
 		let currentX = rect.left;
 		let currentY = rect.bottom;
@@ -55,38 +56,43 @@ function getSelectionCoords() {
 	return { x: x, y: y };
 }
 
+// Лучше класс, а не id, так как в будущем планируется поддержка множественного выделения
 let translateBlockClassName = "translate-so-easy-dialog";
 let maxQuantityOfLettersForBigFontSize = 100; // Лучше потом переделать в количество слов?
 let bigFontSize = 16;
 let borderShift = 10;
 
-// Поддержка множественного удаления. Пригодится, когда быдет реализовано множественное выделение
+// Поддержка множественного удаления. Пригодится, когда будет реализовано множественное выделение
 function removeAllBlocks() {
 	let blocks = document.getElementsByClassName(translateBlockClassName);
-	for (var i = 0; i < blocks.length; i++) {
+	for (let i = 0; i < blocks.length; i++) {
 		blocks[i].remove();
 	}
 }
 
 document.onmouseup = function() {
-	let selectionString = window.getSelection().toString();
-	if (selectionString.replace(/\s+/g,'') !== "") {
-		let div = document.createElement('div');
-		let coords = getSelectionCoords();
-		console.log(coords.x + ", " + coords.y);
-		let selectionStringWithTags = selectionString.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	if (event.target.className !== translateBlockClassName) {
+		let selectionString = window.getSelection().toString();
+		if (selectionString.replace(/\s+/g,'') !== "") {
+			let div = document.createElement('div');
+			let coords = getSelectionCoords();
+			console.log(coords.x + ", " + coords.y);
+			let selectionStringWithTags = selectionString.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-		div.innerHTML = selectionStringWithTags;
-		div.className = translateBlockClassName;
-		if (selectionString.length <= maxQuantityOfLettersForBigFontSize) 
-			div.style.fontSize = bigFontSize + "px";
-		div.style.left = coords.x + "px";
-		div.style.top = coords.y + "px";
-		document.body.append(div);
+			div.innerHTML = selectionStringWithTags;
+			div.className = translateBlockClassName;
+			if (selectionString.length <= maxQuantityOfLettersForBigFontSize) 
+				div.style.fontSize = bigFontSize + "px";
+			div.style.left = coords.x + "px";
+			div.style.top = coords.y + "px";
+			document.body.append(div);
+		}
 	}
 }
 
 document.onmousedown = function() {
-	document.getSelection().removeAllRanges(); // Очистить текущее выделение, если оно существует
-	removeAllBlocks();
+	if (event.target.className !== translateBlockClassName) {
+		document.getSelection().removeAllRanges(); // Очистить текущее выделение, если оно существует
+		removeAllBlocks();
+	}
 }
