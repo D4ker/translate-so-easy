@@ -4,6 +4,13 @@
 	2. Выборочное выделение в блоке-подсказке. Будет работать в будущем при зажатой клавише Ctrl
 */
 
+/*
+На данный имеются баги:
+	1. При выделении иногда появляются невидимые элементы без текста, из-за чего координата X блока
+	с переводом может приобретатьнеожиданные значения. Нужно как-то обеспечить игнорирование блоков,
+	которые не содержат текст.
+*/
+
 let translatorsURL = {
 	"deepL": "https://www.deepl.com/translator",
 };
@@ -36,7 +43,7 @@ function getBlockXY(rects) {
 function getSelectionCoords() {
 	let sel = document.selection, range;
 	let x = 0, y = 0;
-	if (sel) {
+	if (sel) { // Есть ли необходимость в данном if-блоке?
 		if (sel.type != "Control") {
 			range = sel.createRange();
 			range.collapse(false);
@@ -76,12 +83,12 @@ document.onmouseup = function() {
 		if (selectionString.replace(/\s+/g,'') !== "") {
 			let div = document.createElement('div');
 			let coords = getSelectionCoords();
-			console.log(coords.x + ", " + coords.y);
+			// console.log(coords.x + ", " + coords.y);
 			let selectionStringWithTags = selectionString.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 			div.innerHTML = selectionStringWithTags;
 			div.className = translateBlockClassName;
-			if (selectionString.length <= maxQuantityOfLettersForBigFontSize) 
+			if (selectionString.length <= maxQuantityOfLettersForBigFontSize)
 				div.style.fontSize = bigFontSize + "px";
 			div.style.left = coords.x + "px";
 			div.style.top = coords.y + "px";
