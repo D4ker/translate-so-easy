@@ -1,13 +1,36 @@
-//alert("Hello World!");
+/*
+На данный момент не поддерживается:
+1. Множественное выделение.
+*/
 
-var translatorsURL = {
+let translatorsURL = {
 	"deepL": "https://www.deepl.com/translator",
 };
 
-var tagsClass = {
+let tagsClass = {
 	"original": "",
 	"translate": "lmt__translations_as_text__text_btn"
 };
+
+function getBlockXY(rects) {
+	let rect = rects[0];
+	let minX = rect.left;
+	let maxY = rect.bottom;
+	for (var i = 1; i < rects.length; i++) {
+		rect = rects[i];
+		let currentX = rect.left;
+		let currentY = rect.bottom;
+		if (currentX < minX) {
+			minX = currentX;
+		}
+		if (currentY > maxY) {
+			maxY = currentY;
+		}
+	}
+	if (minX < 0) minX = borderShift;
+	if (maxY < 0) maxY = borderShift; // Эта строка, возможно, лишняя
+	return {x: minX + pageXOffset, y: maxY + pageYOffset};
+}
 
 function getSelectionCoords() {
 	let sel = document.selection, range;
@@ -24,19 +47,20 @@ function getSelectionCoords() {
 		if (sel.rangeCount) {
 			range = sel.getRangeAt(0).cloneRange();
 			if (range.getClientRects) {
-				range.collapse(true);
-				let rect = range.getClientRects()[0];
-				console.log(rect);
-				x = rect.left + pageXOffset;
-				y = rect.bottom + pageYOffset;
+				let rects = range.getClientRects();
+				return getBlockXY(rects);
 			}
 		}
 	}
 	return { x: x, y: y };
 }
 
-var translateBlockClassName = "translate-so-easy-dialog";
+let translateBlockClassName = "translate-so-easy-dialog";
+let maxQuantityOfLettersForBigFontSize = 100; // Лучше потом переделать в количество слов?
+let bigFontSize = 16;
+let borderShift = 10;
 
+// Поддержка множественного удаления. Пригодится, когда быдет реализовано множественное выделение
 function removeAllBlocks() {
 	let blocks = document.getElementsByClassName(translateBlockClassName);
 	for (var i = 0; i < blocks.length; i++) {
@@ -45,17 +69,24 @@ function removeAllBlocks() {
 }
 
 document.onmouseup = function() {
-	removeAllBlocks();
 	let selectionString = window.getSelection().toString();
 	if (selectionString.replace(/\s+/g,'') !== "") {
 		let div = document.createElement('div');
-		div.className = translateBlockClassName;
-		let selectionStringWithTags = selectionString.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-		div.innerHTML = selectionStringWithTags;
 		let coords = getSelectionCoords();
 		console.log(coords.x + ", " + coords.y);
+		let selectionStringWithTags = selectionString.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+		div.innerHTML = selectionStringWithTags;
+		div.className = translateBlockClassName;
+		if (selectionString.length <= maxQuantityOfLettersForBigFontSize) 
+			div.style.fontSize = bigFontSize + "px";
 		div.style.left = coords.x + "px";
 		div.style.top = coords.y + "px";
 		document.body.append(div);
 	}
+}
+
+document.onmousedown = function() {
+	document.getSelection().removeAllRanges(); // Очистить текущее выделение, если оно существует
+	removeAllBlocks();
 }
