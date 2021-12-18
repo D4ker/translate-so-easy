@@ -4,15 +4,24 @@
 	"description":"The translation has never been so simple",
 	"version":"1.0",
 	"author":"D4ker",
+	"background": {
+		"scripts": ["app/background.js"],
+		"persistent": false
+	},
 	"content_scripts": [
 		{
 			"matches": ["<all_urls>"],
 			"run_at": "document_end",
-			"css": ["style.css"],
-			"js": ["script.js"]
+			"css": ["src/css/style.css"],
+			"js": ["app/content.js"]
 		}
 	],
+	"permissions": [
+		"tabs",
+		"alarms",
+		"https://translate.google.com/"
+	],
 	"icons":{
-		"96":"icons/96x96.png"
+		"96":"icons/icon96.png"
 	}
 }
